@@ -5,7 +5,7 @@ import re
 
 class Bazeries:
 
-    alfabeto='abcdefghiklmnopqrstuvwxyz'
+    alfabeto='abcdefghijklmnopqrstuvwxyz'
     llave=''
     texto=''
     cifrado=''
@@ -152,10 +152,14 @@ if __name__ == "__main__":
 
     b = Bazeries()
 
-    texto = "holaatodos"
+    texto = "holajesus"
     clave = 123
 
+    print("Texto",texto)
+
     cifrado = b.cifrar(texto,clave)
+
+    print("Texto",texto)
 
     descifrado = b.descifrar(cifrado,clave)
 
