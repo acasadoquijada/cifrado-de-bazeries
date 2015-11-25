@@ -1,139 +1,166 @@
 import itertools
 import string
-from num2words import num2words # https://pypi.python.org/pypi/num2words
+from num2words import num2words
 import re
 
-matrix = [[0 for x in range(5)] for x in range(5)]
+class Bazeries:
 
-alfabeto='abcdefghiklmnopqrstuvwxyz'
-
-indices_matriz_alfabeto={}
-
-#Primer square
-indice = 0
-for i in range(0,5):
-    for j in range(0,5):
-        matrix[j][i] = alfabeto[indice]
-        indices_matriz_alfabeto[alfabeto[indice]] = j,i
-        indice = indice + 1
+    alfabeto='abcdefghiklmnopqrstuvwxyz'
+    llave=''
+    texto=''
+    cifrado=''
+    descifrado=''
+    matrix=[[0 for x in range(5)] for x in range(5)]
+    matrix2=[[0 for x in range(5)] for x in range(5)]
+    indices_matriz_alfabeto={}
+    indices_matriz_llave = {}
 
 
-#Sacamos la key de los numeros    
-digits = []
-key = '1325'
-key = int(key)
-while key:
-    key, d = divmod(key, 10)
-    digits.append(d)
-digits.reverse()
+    def __init__(self):
+
+        #Rellenamos la primera matriz con el alfabeto
+        indice = 0
+        for i in range(0,5):
+            for j in range(0,5):
+                self.matrix[j][i] = self.alfabeto[indice]
+                self.indices_matriz_alfabeto[self.alfabeto[indice]] = j,i
+                indice = indice + 1
 
 
-i = 0
-
-texto = 'sampleplaintext'
-texto_reverso = ''
-
-#http://stackoverflow.com/questions/931092/reverse-a-string-in-python
-
-def reverse(text):
-    r_text = ''
-    index = len(text) - 1
-
-    while index >= 0:
-        r_text += text[index] #string canbe concatenated
-        index -= 1
-
-    return r_text
 
 
-# Obtenemos el texto en grupos dados por 'key' y le damos la vuelta a cada grupo
-for d in itertools.cycle(digits):
+    def cifrar(self, texto, llave):
 
-    texto_reverso+=reverse(texto[i:i+d])
-    texto_reverso+= ' '
-    i +=d
+        # Preprocesamiento del texto
+        texto = re.sub(' ', '',texto)
 
-    if( i >= len(texto)):
-        break
+        texto = texto.lower()
 
+        #Actualizamos el valor de texto y llave
+        self.texto = texto
+        self.llave = llave
 
-#Expresiones regulares para quitarme de enmedio - , and
-# De la key sacamos las palabras
-# Ej: 153 -> one hundred fifty three
+        i = 0
+        texto_reverso = ''
 
-numero_a_palabra = num2words(1325)
+        # Obtenemos los digitos de la llave
+        digitos = []
+        llave = int(llave)
+        while llave:
+            llave, d = divmod(llave, 10)
+            digitos.append(d)
+        digitos.reverse() 
 
-numero_a_palabra = re.sub(',', '',numero_a_palabra)
+        # Obtenemos el texto en grupos dados por la llave y le damos la vuelta a cada grupo
+        for d in itertools.cycle(digitos):
 
-numero_a_palabra = re.sub(' and |-| ', '',numero_a_palabra)
+            texto_reverso+=self.reverse(texto[i:i+d])
+            texto_reverso+= ' '
+            i +=d
 
+            if( i >= len(texto)):
+                break
 
-#sacamos el second square
-pre_llave=''
+        # Obtenemos la llave en letras   
+        # De la key sacamos las palabras
+        # Ej: 153 -> one hundred fifty three
 
-for i in numero_a_palabra:
-    if i not in pre_llave:
-        pre_llave+=i
+        numero_a_palabra = num2words(llave)
 
+        numero_a_palabra = re.sub(',', '',numero_a_palabra)
 
-for i in alfabeto:
-    if i not in pre_llave:
-        pre_llave+=i
-
-
-matrix2 = [[0 for x in range(5)] for x in range(5)]
-indice = 0
-indices_matriz_llave = {}
-for i in range(0,5):
-    for j in range(0,5):
-        matrix2[i][j] = pre_llave[indice]
-        indices_matriz_llave[pre_llave[indice]] = j,i
-        indice = indice + 1
+        numero_a_palabra = re.sub(' and |-| ', '',numero_a_palabra)
 
 
-# Procedemos a cifrar
+        # Rellenamos la segunda matriz
+       
 
-cifrado =''
+        # aux_matriz2 => String donde se almacena el alfabeto modificado por la clave
+        # antes de ser pasado a la matriz
 
-aux = []
-for t in texto_reverso:
-    if t != ' ':
-        aux = indices_matriz_alfabeto[t]
+        aux_matriz2='' 
 
-        cifrado += str(matrix2[aux[0]][aux[1]])
-
-    elif t == ' ':
-        cifrado += ' '
+        for i in numero_a_palabra:
+            if i not in aux_matriz2:
+                aux_matriz2+=i
 
 
-# Desciframos
-descifrado =''
-for t in cifrado:
-    if t != ' ':
-        aux = indices_matriz_llave[t]
+        for i in self.alfabeto:
+            if i not in aux_matriz2:
+                aux_matriz2+=i
 
-        descifrado += str(matrix[aux[1]][aux[0]])
+        # Rellenamos la 2 matriz
+        indice = 0
 
-    elif t == ' ':
-        descifrado += ' '
+        for i in range(0,5):
+            for j in range(0,5):
+                self.matrix2[i][j] = aux_matriz2[indice]
+                self.indices_matriz_llave[aux_matriz2[indice]] = j,i
+                indice = indice + 1
 
 
-#Volteamos cada paquete y quitamos espacios
+        # Procedemos a cifrar
 
-descifrado_limpio =''
-aux = descifrado.split(" ")
+        aux = []
+        for t in texto_reverso:
+            if t != ' ':
+                aux = self.indices_matriz_alfabeto[t]
 
-for i in aux:
-    descifrado_limpio+=reverse(i)
+                self.cifrado += str(self.matrix2[aux[0]][aux[1]])
 
-# Mostramos los resultados
+            elif t == ' ':
+                self.cifrado += ' '
 
-print("Texto original:",texto)
-print("Texto original del reves y en bloques:",texto_reverso)
-print("Texto cifrado:",cifrado)
-print("Texto descifrado del reves y en bloques:",descifrado)
-print("Texto descifrado limpio:", descifrado_limpio)
+        return(self.cifrado)
 
+    def descifrar(self, texto, llave):
+
+        aux_descifrado=''
+
+        for t in self.cifrado:
+            if t != ' ':
+                aux = self.indices_matriz_llave[t]
+
+                aux_descifrado += str(self.matrix[aux[1]][aux[0]])
+
+            elif t == ' ':
+                aux_descifrado += ' '
+
+
+        #Volteamos cada paquete y quitamos espacios
+        aux_descifrado = aux_descifrado.split(" ")
+
+        for i in aux_descifrado:
+            self.descifrado+=self.reverse(i)
+
+        return(self.descifrado)
+
+    #http://stackoverflow.com/questions/931092/reverse-a-string-in-python
+    def reverse(self,text):
+        r_text = ''
+        index = len(text) - 1
+
+        while index >= 0:
+            r_text += text[index] 
+            index -= 1
+
+        return r_text
+
+
+
+if __name__ == "__main__":
+
+    b = Bazeries()
+
+    texto = "holaatodos"
+    clave = 123
+
+    cifrado = b.cifrar(texto,clave)
+
+    descifrado = b.descifrar(cifrado,clave)
+
+
+    print("Texto descifrado:", descifrado)
 
 
 
