@@ -5,10 +5,11 @@ import re
 
 class Bazeries:
 
-    alfabeto='abcdefghijklmnopqrstuvwxyz'
+    alfabeto='abcdefghiklmnopqrstuvwxyz'
     llave=''
     texto=''
     cifrado=''
+    digitos=[]
     descifrado=''
     matrix=[[0 for x in range(5)] for x in range(5)]
     matrix2=[[0 for x in range(5)] for x in range(5)]
@@ -27,8 +28,8 @@ class Bazeries:
                 indice = indice + 1
 
 
-
-
+    
+    ## Descifrado
     def cifrar(self, texto, llave):
 
         # Preprocesamiento del texto
@@ -39,43 +40,34 @@ class Bazeries:
         #Actualizamos el valor de texto y llave
         self.texto = texto
         self.llave = llave
+        self.llave = int(self.llave)
 
         i = 0
         texto_reverso = ''
 
         # Obtenemos los digitos de la llave
-        digitos = []
-        llave = int(llave)
+
         while llave:
             llave, d = divmod(llave, 10)
-            digitos.append(d)
-        digitos.reverse() 
+            self.digitos.append(d)
+        self.digitos.reverse() 
 
         # Obtenemos el texto en grupos dados por la llave y le damos la vuelta a cada grupo
-        for d in itertools.cycle(digitos):
 
-            texto_reverso+=self.reverse(texto[i:i+d])
-            texto_reverso+= ' '
-            i +=d
-
-            if( i >= len(texto)):
-                break
+        texto_reverso=self.separar_en_grupos(texto)
 
         # Obtenemos la llave en letras   
         # De la key sacamos las palabras
         # Ej: 153 -> one hundred fifty three
 
-        numero_a_palabra = num2words(llave)
+        numero_a_palabra = num2words(self.llave)
 
         numero_a_palabra = re.sub(',', '',numero_a_palabra)
 
         numero_a_palabra = re.sub(' and |-| ', '',numero_a_palabra)
 
 
-        # Rellenamos la segunda matriz
-       
-
-        # aux_matriz2 => String donde se almacena el alfabeto modificado por la clave
+        # aux_matriz2 => String donde se almacena el alfabeto modificado por la llave
         # antes de ser pasado a la matriz
 
         aux_matriz2='' 
@@ -89,6 +81,7 @@ class Bazeries:
             if i not in aux_matriz2:
                 aux_matriz2+=i
 
+
         # Rellenamos la 2 matriz
         indice = 0
 
@@ -101,41 +94,45 @@ class Bazeries:
 
         # Procedemos a cifrar
 
+
         aux = []
+        a = ''
         for t in texto_reverso:
             if t != ' ':
                 aux = self.indices_matriz_alfabeto[t]
 
                 self.cifrado += str(self.matrix2[aux[0]][aux[1]])
-
-            elif t == ' ':
-                self.cifrado += ' '
+                a+=str(self.matrix2[aux[0]][aux[1]])
+            else:
+                a += ' '
 
         return(self.cifrado)
 
+    ## Cifrado
     def descifrar(self, texto, llave):
 
         aux_descifrado=''
+        cifrado_en_bloques = self.separar_en_grupos(texto)
 
-        for t in self.cifrado:
+
+        for t in cifrado_en_bloques:
             if t != ' ':
+            
                 aux = self.indices_matriz_llave[t]
-
                 aux_descifrado += str(self.matrix[aux[1]][aux[0]])
 
             elif t == ' ':
                 aux_descifrado += ' '
 
-
         #Volteamos cada paquete y quitamos espacios
         aux_descifrado = aux_descifrado.split(" ")
 
         for i in aux_descifrado:
-            self.descifrado+=self.reverse(i)
+            self.descifrado+=(i)
 
         return(self.descifrado)
 
-    #http://stackoverflow.com/questions/931092/reverse-a-string-in-python
+    ## Reverso
     def reverse(self,text):
         r_text = ''
         index = len(text) - 1
@@ -146,23 +143,33 @@ class Bazeries:
 
         return r_text
 
+    ## Separar en grupos
+    def separar_en_grupos(self,texto):
+        i = 0
+        texto_en_bloques=''
+        for d in itertools.cycle(self.digitos):
 
+            texto_en_bloques+=self.reverse(texto[i:i+d])
+            texto_en_bloques+= ' '
+            i +=d
+
+            if( i >= len(texto)):
+                break
+
+        return texto_en_bloques
 
 if __name__ == "__main__":
 
     b = Bazeries()
 
-    texto = "holajesus"
-    clave = 123
+    texto = "textoescondido"
+    llave = 1325
 
-    print("Texto",texto)
+    cifrado = b.cifrar(texto,llave)
 
-    cifrado = b.cifrar(texto,clave)
+    print("Texto cifrado: ",cifrado)
 
-    print("Texto",texto)
-
-    descifrado = b.descifrar(cifrado,clave)
-
+    descifrado = b.descifrar(cifrado,llave)
 
     print("Texto descifrado:", descifrado)
 
