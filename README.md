@@ -89,7 +89,7 @@ En el método `main` se construye el objeto Bazeries y se realiza un cifrado y d
 
 ##Dependencias
 
-Para ejecutar el programa necesitas `num2words` para instalarlo puedes usar `sudo pip install num2words` o descargarlo desde [aquí](https://pypi.python.org/pypi/num2words)
+Para ejecutar el programa necesitas `num2words` para instalarlo puedes usar `sudo pip3 install num2words` o descargarlo desde [aquí](https://pypi.python.org/pypi/num2words)
 
 ##Uso
 
